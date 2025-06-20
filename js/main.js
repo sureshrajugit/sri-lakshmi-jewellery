@@ -204,4 +204,27 @@
         });
     });
 
+    // 💰 Fetch Madurai Gold & Silver Rates
+    document.getElementById('rate-date').innerText = 'Loading rates...';
+    document.getElementById('gold-rate').innerText = '...';
+    document.getElementById('silver-rate').innerText = '...';
+    fetch('https://lxj-backend.onrender.com/api/rates')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('rate-date').innerText = data.date;
+        const goldRaw = data.goldRates?.['22K'] || '';
+        const silverRaw = data.silverRate || '';
+
+        const goldClean = goldRaw.replace(/[^\d]/g, '').slice(0, 4);
+        const silverClean = silverRaw.replace(/[^\d.]/g, '').split('.')[0];
+        document.getElementById('gold-rate').innerText = goldClean;
+        document.getElementById('silver-rate').innerText = silverClean;
+    })
+    .catch(error => {
+        console.error('Failed to load rate data:', error);
+        document.getElementById('rate-date').innerText = `Today Rate: Not available`;
+        document.getElementById('gold-rate').innerText = 'N/A';
+        document.getElementById('silver-rate').innerText = 'N/A';
+    });
+
 })(jQuery);
