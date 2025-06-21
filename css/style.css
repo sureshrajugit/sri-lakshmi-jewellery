@@ -392,9 +392,7 @@ ol {
     display: inline-block;
 }
 .header__rates {
-    display: flex;
-    justify-content: space-between;
-    font-weight: bold;
+    display: none;
 }
 
 .header__rates p {
@@ -3502,6 +3500,11 @@ ol {
 /* Wide Mobile = 480px */
 
 @media only screen and (max-width: 767px) {
+    .header__rates {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+    }
     .canvas__open {
         display: block;
         font-size: 22px;
