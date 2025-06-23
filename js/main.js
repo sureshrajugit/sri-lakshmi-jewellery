@@ -204,34 +204,52 @@
         });
     });
 
-    // 💰 Fetch Madurai Gold & Silver Rates
-    document.getElementById('rate-date').innerText = 'Loading rates...';
-    document.getElementById('rate-mobile-date').innerText = 'Loading rates...';
-    document.getElementById('gold-rate').innerText = '...';
-    document.getElementById('gold-mobile-rate').innerText = '...';
-    document.getElementById('silver-rate').innerText = '...';
-    document.getElementById('silver-mobile-rate').innerText = '...';
+    // Helper to update UI
+function updateRatesUI(date, gold, silver) {
+    document.getElementById('rate-date').innerText = date;
+    document.getElementById('rate-mobile-date').innerText = date;
+    document.getElementById('gold-rate').innerText = gold;
+    document.getElementById('gold-mobile-rate').innerText = gold;
+    document.getElementById('silver-rate').innerText = silver;
+    document.getElementById('silver-mobile-rate').innerText = silver;
+}
+
+// Show loading placeholders
+updateRatesUI('Loading rates...', '...', '...');
+
+// Check localStorage
+const cachedRates = JSON.parse(localStorage.getItem('goldSilverRates'));
+const todayFormatted = new Date().toLocaleDateString('en-GB', {
+    day: '2-digit', month: 'short', year: 'numeric'
+}).replace(/ /g, '/'); // e.g., "20/Jun/2025"
+
+if (cachedRates && cachedRates.date === todayFormatted) {
+    // Use cached values
+    updateRatesUI(cachedRates.date, cachedRates.gold, cachedRates.silver);
+} else {
+    // Fetch fresh values
     fetch('https://lxj-backend.onrender.com/api/rates')
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('rate-date').innerText = data.date;
-        document.getElementById('rate-mobile-date').innerText = data.date;
-        const goldRaw = data.goldRates?.['22K'] || '';
-        const silverRaw = data.silverRate || '';
+        .then(response => response.json())
+        .then(data => {
+            const goldRaw = data.goldRates?.['22K'] || '';
+            const silverRaw = data.silverRate || '';
 
-        const goldClean = goldRaw.replace(/[^\d]/g, '').slice(0, 4);
-        const silverClean = silverRaw.replace(/[^\d.]/g, '').split('.')[0];
-        document.getElementById('gold-rate').innerText = goldClean;
-        document.getElementById('gold-mobile-rate').innerText = goldClean;
-        document.getElementById('silver-rate').innerText = silverClean;
-        document.getElementById('silver-mobile-rate').innerText = silverClean;
-    })
-    .catch(error => {
-        console.error('Failed to load rate data:', error);
-        document.getElementById('rate-date').innerText = `Today Rate: Not available`;
-        document.getElementById('gold-rate').innerText = 'N/A';
-        document.getElementById('silver-rate').innerText = 'N/A';
-    });
+            const goldClean = goldRaw.replace(/[^\d]/g, '').slice(0, 4);
+            const silverClean = silverRaw.replace(/[^\d.]/g, '').split('.')[0];
 
+            updateRatesUI(data.date, goldClean, silverClean);
+
+            // Save to localStorage
+            localStorage.setItem('goldSilverRates', JSON.stringify({
+                date: data.date,
+                gold: goldClean,
+                silver: silverClean
+            }));
+        })
+        .catch(error => {
+            console.error('Failed to load rate data:', error);
+            updateRatesUI('Today Rate: Not available', 'N/A', 'N/A');
+        });
+}
 
 })(jQuery);
